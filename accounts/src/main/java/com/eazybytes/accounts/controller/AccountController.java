@@ -20,28 +20,42 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * @author Eazy Bytes
+ */
+
 @Tag(
-        name = "CRUD REST APIs for Accounts in Banking App",
-        description = "CRUD REST APIs in Banking App to CREATE, UPDATE, FETCH and DELETE account details"
+        name = "CRUD REST APIs for Accounts in EazyBank",
+        description = "CRUD REST APIs in EazyBank to CREATE, UPDATE, FETCH AND DELETE account details"
 )
 @RestController
-@RequestMapping(path = "/api", produces = {MediaType.APPLICATION_JSON_VALUE})
+@RequestMapping(path="/api", produces = {MediaType.APPLICATION_JSON_VALUE})
 @AllArgsConstructor
 @Validated
 public class AccountController {
 
-    IAccountsService iAccountsService;
+    private IAccountsService iAccountsService;
 
     @Operation(
             summary = "Create Account REST API",
-            description = "REST API to create new Customer and Account inside Banking App"
+            description = "REST API to create new Customer &  Account inside EazyBank"
     )
-    @ApiResponse(
-            responseCode = "201",
-            description = "HTTP Status CREATED"
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "HTTP Status CREATED"
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "HTTP Status Internal Server Error",
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponseDto.class)
+                    )
+            )
+    }
     )
     @PostMapping("/create")
-    public ResponseEntity<ResponseDto> create(@Valid @RequestBody CustomerDto customerDto) {
+    public ResponseEntity<ResponseDto> createAccount(@Valid @RequestBody CustomerDto customerDto) {
         iAccountsService.createAccount(customerDto);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -67,11 +81,12 @@ public class AccountController {
     }
     )
     @GetMapping("/fetch")
-    public ResponseEntity<CustomerDto> fetchAccountDetails(@RequestParam @Pattern(regexp="(^$|[0-9]{10})",message = "AccountNumber must be 10 digits") String mobileNumber) {
+    public ResponseEntity<CustomerDto> fetchAccountDetails(@RequestParam
+                                                           @Pattern(regexp="(^$|[0-9]{10})",message = "Mobile number must be 10 digits")
+                                                           String mobileNumber) {
         CustomerDto customerDto = iAccountsService.fetchAccount(mobileNumber);
         return ResponseEntity.status(HttpStatus.OK).body(customerDto);
     }
-
 
     @Operation(
             summary = "Update Account Details REST API",
@@ -131,9 +146,10 @@ public class AccountController {
             )
     }
     )
-
     @DeleteMapping("/delete")
-    public ResponseEntity<ResponseDto> deleteAccountDetails(@RequestParam @Pattern(regexp="(^$|[0-9]{10})",message = "AccountNumber must be 10 digits") String mobileNumber) {
+    public ResponseEntity<ResponseDto> deleteAccountDetails(@RequestParam
+                                                            @Pattern(regexp="(^$|[0-9]{10})",message = "Mobile number must be 10 digits")
+                                                            String mobileNumber) {
         boolean isDeleted = iAccountsService.deleteAccount(mobileNumber);
         if(isDeleted) {
             return ResponseEntity
@@ -145,5 +161,6 @@ public class AccountController {
                     .body(new ResponseDto(AccountsConstants.STATUS_417, AccountsConstants.MESSAGE_417_DELETE));
         }
     }
+
 
 }
